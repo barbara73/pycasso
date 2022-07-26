@@ -31,9 +31,8 @@ def agfa_dataset() -> Dataset:
     """Tiny Dataset that can be used with some_rules and a_core_with_some_rules"""
     dataset = Dataset()
     dataset.add(DataElementFactory(tag='Modality', value='CT'))
-    dataset.add(DataElementFactory(tag='Manufacturer', value='Agfa'))
-    dataset.add(DataElementFactory(tag='Rows', value=775))
     dataset.add(DataElementFactory(tag='Columns', value=1024))
+    dataset.add(DataElementFactory(tag='Rows', value=775))
     block = dataset.private_block(0x00B1, 'TestCreator', create=True)
     block.add_new(0x01, 'SH', 'my testvalue')
 
@@ -56,4 +55,3 @@ def transfer_syntax_ds() -> Dataset:
     dataset.file_meta = Dataset()
     dataset.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
     return dataset
-
