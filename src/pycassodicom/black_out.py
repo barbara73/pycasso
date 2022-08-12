@@ -8,6 +8,7 @@ They will be deleted (set to None).
 """
 from typing import Optional
 
+import numpy as np
 from pydicom import Dataset
 from pydicom.uid import ExplicitVRLittleEndian
 
@@ -25,14 +26,63 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             img[0:round(img.shape[0] * 0.07), :] = 0  # ca. 7%
 
             ds.PixelData = img.tobytes()
-            ds.PhotometricInterpretation = 'YBR_FULL'  # important!!
-            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
-            return ds
+            ds.PhotometricInterpretation = 'YBR_FULL'                   # important!!
+            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
+
+        if ds.ManufacturerModelName == 'iE33' \
+                and ds.Rows == 600 \
+                and ds.Columns == 800:
+            img = ds.pixel_array
+            img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
+            img[:, 0:round(img.shape[1] * 0.1), :, :] = 0
+
+            ds.PixelData = img
+            ds.PhotometricInterpretation = 'RGB'                        # important!!
+            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
+
+        if ds.ManufacturerModelName == 'iE33' \
+                and ds.Rows == 768 \
+                and ds.Columns == 1024:
+            img = ds.pixel_array
+            img[0:round(img.shape[0] * 0.1), :, :] = 0
+
+            ds.PixelData = img
+            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
+
+        if ds.ManufacturerModelName == 'Vivid E95' \
+                and ds.Rows == 708:
+            img = ds.pixel_array
+            try:
+                img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
+                img[:, 0:round(img.shape[1] * 0.072), :, :] = 0
+            except:
+                img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
+                img[0:round(img.shape[1] * 0.03), :, :] = 0
+
+            finally:
+                ds.PixelData = img
+                ds.PhotometricInterpretation = 'RGB'
+                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+
+        if ds.ManufacturerModelName == 'Vivid E95' \
+                and ds.Rows == 758:
+            img = ds.pixel_array
+            try:
+
+                img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
+                img[:, 0:round(img.shape[1] * 0.065), :, :] = 0
+            except:
+                img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
+                img[0:round(img.shape[1] * 0.05), :, :] = 0
+            finally:
+                ds.PixelData = img
+                ds.PhotometricInterpretation = 'RGB'
+                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+
+        return ds
 
     except AttributeError:
         return ds
-
-    return ds
 
 
 def delete_dicom(ds: Dataset) -> Optional[Dataset]:
@@ -47,7 +97,18 @@ def delete_dicom(ds: Dataset) -> Optional[Dataset]:
                 and (ds.Columns == 968):
             return None
 
+        if (ds.ManufacturerModelName == 'iE33') \
+                and (ds.ImageType == ['ORIGINAL', 'PRIMARY', 'INVALID']):
+            return None
+
+        if ds.ManufacturerModelName == 'Vivid E95' \
+                and ds.Rows == 708\
+                and ds.NumberOfFrames is None\
+                and ds.BurnedInAnnotation is None:
+            return None
+
+        return ds
+
     except AttributeError:
         return ds
 
-    return ds
