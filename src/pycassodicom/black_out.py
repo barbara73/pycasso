@@ -90,15 +90,23 @@ def blacken_pixels(ds: Dataset) -> Dataset:
 
         if ds.ManufacturerModelName == 'TUS-AI900' and 'CARDIOLOGY' in ds.ImageType:
             img = ds.pixel_array
-            try:
-                img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
-                img[:, 0:round(img.shape[1] * 0.072), :, :] = 0
-                ds.PhotometricInterpretation = 'RGB'  # important!!
-            except:
-                img[0:round(img.shape[0] * 0.072), :, :] = 0
-            finally:
-                ds.PixelData = img
-                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+            if ds.PhotometricInterpretation == 'RGB':
+                try:
+                    img[:, 0:round(img.shape[1] * 0.072), :, :] = 0
+                except:
+                    img[0:round(img.shape[0] * 0.072), :, :] = 0
+            else:
+                try:
+                    img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
+                    img[:, 0:round(img.shape[1] * 0.072), :, :] = 0
+                except:
+                    img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
+                    img[0:round(img.shape[0] * 0.072), :, :] = 0
+                finally:
+                    ds.PhotometricInterpretation = 'RGB'
+
+            ds.PixelData = img
+            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
 
         return ds
 
