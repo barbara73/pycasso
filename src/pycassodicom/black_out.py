@@ -18,6 +18,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
     Blacken pixel based on manufacturer, modality and image size.
     """
     try:
+        ## Modality CT and Agfa
         if (ds.Modality == 'CT') \
                 and (ds.Manufacturer == 'Agfa') \
                 and (ds.Rows == 775) \
@@ -29,6 +30,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             ds.PhotometricInterpretation = 'YBR_FULL'                   # important!!
             ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
 
+        ## Modality US and PHILIPS
         if ds.ManufacturerModelName == 'iE33' \
                 and ds.Rows == 600 \
                 and ds.Columns == 800:
@@ -49,6 +51,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             ds.PixelData = img
             ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
 
+        ## Modality US and GE
         if ds.ManufacturerModelName == 'Vivid E95' \
                 and ds.Rows == 708:
             img = ds.pixel_array
@@ -79,6 +82,20 @@ def blacken_pixels(ds: Dataset) -> Dataset:
                 ds.PhotometricInterpretation = 'RGB'
                 ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
 
+        if ds.ManufacturerModelName == 'Vivid E9':
+            img = ds.pixel_array
+            try:
+
+                img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
+                img[:, 0:round(img.shape[1] * 0.1), :, :] = 0
+            except:
+                img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
+                img[0:round(img.shape[1] * 0.072), :, :] = 0
+            finally:
+                ds.PixelData = img
+                ds.PhotometricInterpretation = 'RGB'  # important!!
+                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+
         return ds
 
     except AttributeError:
@@ -106,6 +123,7 @@ def delete_dicom(ds: Dataset) -> Optional[Dataset]:
                 and ds.NumberOfFrames is None\
                 and ds.BurnedInAnnotation is None:
             return None
+
 
         return ds
 
