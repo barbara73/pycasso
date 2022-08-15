@@ -31,7 +31,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
 
         ## Modality US and PHILIPS
-        if ds.ManufacturerModelName == 'iE33' \
+        if ds.ManufacturerModelName in ('EPIQ 7C', 'iE33') \
                 and ds.Rows == 600 \
                 and ds.Columns == 800:
             img = ds.pixel_array
@@ -42,14 +42,20 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             ds.PhotometricInterpretation = 'RGB'                        # important!!
             ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
 
-        if ds.ManufacturerModelName == 'iE33' \
+        if ds.ManufacturerModelName in ('EPIQ 7C', 'iE33') \
                 and ds.Rows == 768 \
                 and ds.Columns == 1024:
             img = ds.pixel_array
-            img[0:round(img.shape[0] * 0.1), :, :] = 0
+
+            if ds.PhotometricInterpretation == 'MONOCHROME2':
+                img[0:round(img.shape[0] * 0.1), :] = 0
+                ds.PhotometricInterpretation = 'YBR_FULL'
+
+            else:
+                img[0:round(img.shape[0] * 0.1), :, :] = 0
 
             ds.PixelData = img
-            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
+            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
 
         ## Modality US and GE
         if ds.ManufacturerModelName == 'Vivid E95' \
