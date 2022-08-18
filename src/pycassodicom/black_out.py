@@ -22,8 +22,8 @@ def update_ds(ds: Dataset) -> Dataset:
     """
     ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
     ds.BurnedInAnnotation = 'NO'
-    text = ds.DeIdentificationMethodCodeSequence
-    ds.DeIdentificationMethodCodeSequence = f'{text}/113101'
+    text = ds.DeidentificationMethodCodeSequence
+    ds.DeidentificationMethodCodeSequence = f'{text}/113101'
     return ds
 
 
