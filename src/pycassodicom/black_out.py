@@ -145,7 +145,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
         return ds
 
 
-def delete_dicom(ds: Dataset) -> Optional[Dataset]:
+def delete_dicom(ds: Dataset) -> bool:
     """
     Return None if the dicom can be deleted.
     """
@@ -155,10 +155,10 @@ def delete_dicom(ds: Dataset) -> Optional[Dataset]:
                 and ds.ImageType[:4] == ['DERIVED', 'SECONDARY', 'OTHER', 'VPCT'] \
                 and ds.Rows == 968 \
                 and ds.Columns == 968:
-            return None
+            return True
 
         if ds.Modality == 'US' and ds.NumberOfFrames is None:   # check if row and column need to be here
-            return None
+            return True
 
         # if (ds.ManufacturerModelName == 'iE33') \
         #         and (ds.ImageType == ['ORIGINAL', 'PRIMARY', 'INVALID']):
@@ -168,14 +168,14 @@ def delete_dicom(ds: Dataset) -> Optional[Dataset]:
                 and ds.Rows == 708 \
                 and ds.NumberOfFrames is None \
                 and ds.BurnedInAnnotation is None:
-            return None
+            return True
 
         if ds.ManufacturerModelName == 'TUS-AI900' \
                 and 'CARDIOLOGY' not in ds.ImageType:
-            return None
+            return True
 
-        return ds
+        return False
 
     except AttributeError:
-        return ds
+        return False
 
