@@ -22,6 +22,8 @@ def update_ds(ds: Dataset) -> Dataset:
     """
     ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
     ds.BurnedInAnnotation = 'NO'
+    ds.DeidentificationMethod = '{Per DICOM PS 3.15 AnnexE. Details in 0012,0064, removed burned-in ' \
+                                'annotation by blackening pixels}'
     text = ds.DeidentificationMethodCodeSequence
     ds.DeidentificationMethodCodeSequence = f'{text}/113101'
     return ds
