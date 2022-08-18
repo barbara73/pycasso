@@ -13,6 +13,20 @@ from pydicom import Dataset
 from pydicom.uid import ExplicitVRLittleEndian
 
 
+def update_ds(ds: Dataset) -> Dataset:
+    """
+    Since the image is changed, the dicom tags have to change, too.
+    - no burned-in anymore
+    - transfer syntax changes, too
+    - add, which method was used
+    """
+    ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+    ds.BurnedInAnnotation = 'NO'
+    text = ds.DeIdentificationMethodCodeSequence
+    ds.DeIdentificationMethodCodeSequence = f'{text}/113101'
+    return ds
+
+
 def blacken_pixels(ds: Dataset) -> Dataset:
     """
     Blacken pixel based on manufacturer, modality and image size.
@@ -23,16 +37,14 @@ def blacken_pixels(ds: Dataset) -> Dataset:
                 and ds.Rows == 775 and ds.Columns == 1024:
             img = ds.pixel_array
             img[0:round(img.shape[0] * 0.07), :, :] = 0  # ca. 7%
-
-            ds.PixelData = img
             ds.PhotometricInterpretation = 'YBR_FULL'                   # important!!
-            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian     # because changed
+            ds.PixelData = img
+            ds = update_ds(ds)
 
         ## Modality US and PHILIPS
         if ds.Modality == 'US' and 'philips' in (x.casefold() for x in ds.Manufacturer) \
-                and ds.Rows == 600 and ds.Columns == 800:
+                and ds.Rows == 600 and ds.Columns == 800:       # check if row and column needs to be here!
             img = ds.pixel_array
-
             if ds.PhotometricInterpretation == 'MONOCHROME2':
                 ds.PhotometricInterpretation = 'YBR_FULL'
 
@@ -50,7 +62,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
                 img[0:round(img.shape[0] * 0.1), :] = 0
             finally:
                 ds.PixelData = img
-                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+                ds = update_ds(ds)
 
         # if ds.ManufacturerModelName in ('EPIQ 7C', 'iE33') and ds.Rows == 768 and ds.Columns == 1024:
         #     img = ds.pixel_array
@@ -75,7 +87,8 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             finally:
                 ds.PixelData = img
                 ds.PhotometricInterpretation = 'RGB'
-                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+                ds = update_ds(ds)
+
 
         if ds.ManufacturerModelName == 'Vivid E95' and ds.Rows == 758:
             img = ds.pixel_array
@@ -88,7 +101,8 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             finally:
                 ds.PixelData = img
                 ds.PhotometricInterpretation = 'RGB'  # important!!
-                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+                ds = update_ds(ds)
+
 
         if ds.ManufacturerModelName == 'Vivid E9':
             img = ds.pixel_array
@@ -101,7 +115,8 @@ def blacken_pixels(ds: Dataset) -> Dataset:
             finally:
                 ds.PixelData = img
                 ds.PhotometricInterpretation = 'RGB'  # important!!
-                ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+                ds = update_ds(ds)
+
 
         if ds.ManufacturerModelName == 'TUS-AI900' and 'CARDIOLOGY' in ds.ImageType:
             img = ds.pixel_array
@@ -119,9 +134,8 @@ def blacken_pixels(ds: Dataset) -> Dataset:
                     img[0:round(img.shape[0] * 0.072), :, :] = 0
                 finally:
                     ds.PhotometricInterpretation = 'RGB'
-
-            ds.PixelData = img
-            ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian  # because changed
+                    ds.PixelData = img
+                    ds = update_ds(ds)
 
         return ds
 
@@ -141,7 +155,7 @@ def delete_dicom(ds: Dataset) -> Optional[Dataset]:
                 and ds.Columns == 968:
             return None
 
-        if ds.Modality == 'US' and ds.NumberOfFrames is None:
+        if ds.Modality == 'US' and ds.NumberOfFrames is None:   # check if row and column need to be here
             return None
 
         # if (ds.ManufacturerModelName == 'iE33') \
