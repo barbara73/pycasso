@@ -160,9 +160,9 @@ def delete_dicom(ds: Dataset) -> bool:
         if ds.Modality == 'US' and ds.NumberOfFrames is None:   # check if row and column need to be here
             return True
 
-        # if (ds.ManufacturerModelName == 'iE33') \
-        #         and (ds.ImageType == ['ORIGINAL', 'PRIMARY', 'INVALID']):
-        #     return None
+        if ds.Modality == 'US' and 'philips' in (x.casefold() for x in ds.Manufacturer) \
+                and 'INVALID' in ds.ImageType:
+            return True
 
         if ds.ManufacturerModelName == 'Vivid E95' \
                 and ds.Rows == 708 \
