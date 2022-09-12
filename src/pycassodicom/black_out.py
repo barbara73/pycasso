@@ -33,21 +33,11 @@ def blacken_pixels(ds: Dataset) -> Dataset:
     Blacken pixel based on manufacturer, modality and image size.
     """
     try:
-        if 'PRIMARY' in ds.ImageType:
-            # if ds.Modality == 'CT':
-                ## SECONDARY not included anymore!!
-                # if ds.Manufacturer == 'Agfa' \
-                #         and ds.Rows == 775 and ds.Columns == 1024:
-                #     img = ds.pixel_array
-                #     img[0:round(img.shape[0] * 0.07), :, :] = 0  # ca. 7%
-                #     ds.PhotometricInterpretation = 'YBR_FULL'
-                #     ds.PixelData = img
-                #     ds = update_ds(ds)
+        if 'PRIMARY' in (x for x in ds.ImageType):
 
             if ds.Modality == 'US':
                 ## GE
-                if 'GE' in (x for x in ds.Manufacturer):
-                    print('here')
+                if 'GE' in ds.Manufacturer:
                     img = ds.pixel_array
                     if ds.PhotometricInterpretation == 'RGB':
                         try:
@@ -69,7 +59,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
                             ds = update_ds(ds)
 
                     ## PHILIPS
-                    if 'philips' in (x.casefold() for x in ds.Manufacturer):
+                    if 'philips'.casefold() in ds.Manufacturer:
                         img = ds.pixel_array
                         if ds.PhotometricInterpretation == 'MONOCHROME2':
                             ds.PhotometricInterpretation = 'YBR_FULL'
@@ -90,7 +80,7 @@ def blacken_pixels(ds: Dataset) -> Dataset:
                             ds.PixelData = img
                             ds = update_ds(ds)
 
-                    if 'toshiba' in (x.casefold() for x in ds.Manufacturer):
+                    if 'toshiba'.casefold() in ds.Manufacturer:
                         img = ds.pixel_array
                         if ds.PhotometricInterpretation == 'YBR_FULL_422':
                             try:
