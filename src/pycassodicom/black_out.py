@@ -8,6 +8,7 @@ They will be deleted (set to None).
 """
 import numpy as np
 from pydicom import Dataset
+from pydicom.sequence import Sequence
 from pydicom.uid import ExplicitVRLittleEndian
 
 
@@ -20,10 +21,13 @@ def update_ds(ds: Dataset) -> Dataset:
     """
     ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
     ds.BurnedInAnnotation = 'NO'
-    ds.DeidentificationMethod = '{Per DICOM PS 3.15 AnnexE. Details in 0012,0064, removed burned-in ' \
-                                'annotation by blackening pixels}'
+    ds.PatientIdentityRemoved = 'YES'
     text = ds.DeidentificationMethodCodeSequence
-    ds.DeidentificationMethodCodeSequence = f'{text}/113101'
+    ds.DeidentificationMethod = f'{text}blackened pixels'
+
+    ds_sq = Dataset()
+    ds_sq.CodeValue = '113101'
+    ds.DeidentificationMethodCodeSequence = Sequence([ds_sq])
     return ds
 
 
