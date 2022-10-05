@@ -27,7 +27,32 @@ def a_dataset() -> Dataset:
 
 
 @pytest.fixture
-def agfa_dataset() -> Dataset:
+def us_dataset() -> Dataset:
+    """Tiny Dataset that can be used with some_rules and a_core_with_some_rules"""
+    dataset = Dataset()
+    dataset.add(DataElementFactory(tag='Modality', value='US'))
+    dataset.add(DataElementFactory(tag='Columns', value=1024))
+    dataset.add(DataElementFactory(tag='Rows', value=775))
+    block = dataset.private_block(0x00B1, 'TestCreator', create=True)
+    block.add_new(0x01, 'SH', 'my testvalue')
+
+    dataset.file_meta = Dataset()
+    img = np.ones(shape=(dataset.Rows, dataset.Columns, 3), dtype=np.uint16) * 255
+    dataset.PixelData = img.tobytes()
+    dataset.SOPClassUID = '1.2.840.10008.5.1.4.1.1.3.1'
+    dataset.Manufacturer = 'PHILIPS'
+    dataset.ImageType = 'DERIVED\PRIMARY\OTHER\VPCT\clablabla'
+    dataset.PhotometricInterpretation = 'MONOCHROME2'
+    dataset.BitsAllocated = 16
+    dataset.SamplesPerPixel = 1
+    dataset.BitsStored = 16
+    dataset.PixelRepresentation = 1
+    dataset.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+    return dataset
+
+
+@pytest.fixture
+def another_dataset() -> Dataset:
     """Tiny Dataset that can be used with some_rules and a_core_with_some_rules"""
     dataset = Dataset()
     dataset.add(DataElementFactory(tag='Modality', value='CT'))
@@ -54,4 +79,8 @@ def transfer_syntax_ds() -> Dataset:
     dataset = CTDatasetFactory()
     dataset.file_meta = Dataset()
     dataset.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+    dataset.ImageType = 'DERIVED\SECONDARY\OTHER\VPCT\clablabla'
+    ds_sq = Dataset()
+    ds_sq.CodeValue = ''
+    dataset.DeidentificationMethodCodeSequence.append(ds_sq)
     return dataset

@@ -13,35 +13,29 @@ from pydicom import Dataset
 from .update_dicom_tags import update_ds
 
 
-class AbstractManufacturer(ABC):
-    """Abstract class"""
-    @abstractmethod
-    def process_image(self):
-        """Process dicom image for blackening pixels."""
-
-
 @dataclass
-class Philips(AbstractManufacturer):
+class Philips:
     """Philips manufacturer"""
     dataset: Dataset
 
     def process_image(self):
         """Different process for different photometric interpretation and image size."""
         img = self.dataset.pixel_array
+
         if self.dataset.PhotometricInterpretation == 'MONOCHROME2':
             self.dataset.PhotometricInterpretation = 'YBR_FULL'
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             try:
                 img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
-            except:
+            except IndexError:
                 img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
             finally:
                 self.dataset.PhotometricInterpretation = 'RGB'
 
         try:
             img[:, 0:round(img.shape[1] * 0.1), :, :] = 0
-        except:
+        except IndexError:
             img[0:round(img.shape[0] * 0.1), :] = 0
 
         self.dataset.PixelData = img
@@ -49,7 +43,7 @@ class Philips(AbstractManufacturer):
 
 
 @dataclass
-class Toshiba(AbstractManufacturer):
+class Toshiba:
     """Toshiba manufacturer"""
     dataset: Dataset
 
@@ -59,14 +53,14 @@ class Toshiba(AbstractManufacturer):
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             try:
                 img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
-            except:
+            except IndexError:
                 img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
             finally:
                 self.dataset.PhotometricInterpretation = 'RGB'
 
         try:
             img[:, 0:70, :, :] = 0
-        except:
+        except IndexError:
             img[0:70, :] = 0
 
         self.dataset.PixelData = img
@@ -74,7 +68,7 @@ class Toshiba(AbstractManufacturer):
 
 
 @dataclass
-class GeneralElectrics(AbstractManufacturer):
+class GeneralElectrics:
     """GE manufacturer"""
     dataset: Dataset
 
@@ -84,14 +78,14 @@ class GeneralElectrics(AbstractManufacturer):
         if self.dataset.PhotometricInterpretation == 'RGB':
             try:
                 img[:, 0:round(img.shape[1] * 0.072), :, :] = 0
-            except:
+            except IndexError:
                 img[0:round(img.shape[0] * 0.072), :, :] = 0
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             try:
                 img = np.repeat(img[:, :, :, 0, np.newaxis], 3, axis=3)
                 img[:, 0:50, :, :] = 0
-            except:
+            except IndexError:
                 img = np.repeat(img[:, :, 0, np.newaxis], 3, axis=2)
                 img[0:50, :, :] = 0
 
@@ -100,14 +94,23 @@ class GeneralElectrics(AbstractManufacturer):
         return update_ds(self.dataset)
 
 
-@dataclass
 class AbstractModality(ABC):
     """Abstract class"""
+
+    @staticmethod
+    @abstractmethod
+    def blackout_by_manufacturer(dataset):
+        pass
+
+
+@dataclass
+class USModality(AbstractModality):
+    """US (ultra sound) modality"""
     dataset: Dataset
 
     def blackout_by_manufacturer(self):
         """Different manufacturers need different process."""
-        if 'philips'.casefold() in self.dataset.Manufacturer:
+        if str(self.dataset.Manufacturer).find('philips'):
             return Philips(self.dataset).process_image()
 
         if 'toshiba'.casefold() in self.dataset.Manufacturer:
@@ -117,17 +120,13 @@ class AbstractModality(ABC):
             return GeneralElectrics(self.dataset).process_image()
 
 
-
-@dataclass
-class USModality(AbstractModality):
-    """US (ultra sound) modality"""
-    dataset: Dataset
-
-
 @dataclass
 class MRModality(AbstractModality):
     """MR (magnet resonance tomography) modality"""
     dataset: Dataset
+
+    def blackout_by_manufacturer(self):
+        raise NotImplementedError
 
 
 @dataclass
@@ -135,28 +134,37 @@ class CTModality(AbstractModality):
     """CT (computed tomography) modality"""
     dataset: Dataset
 
+    def blackout_by_manufacturer(self):
+        """Different manufacturers need different process."""
+        if 'agfa'.casefold() in self.dataset.Manufacturer:
+            return Toshiba(self.dataset).process_image()
+
 
 @dataclass
 class CRModality(AbstractModality):
     """CR (computed radiology) modality"""
     dataset: Dataset
 
+    def blackout_by_manufacturer(self):
+        raise NotImplementedError
 
-@dataclass
-class BlackOutFactory:
-    """Black out by modality."""
-    dataset: Dataset
 
-    def blackout(self):
-        """Different modalities need different processes."""
-        if self.dataset.Modality == 'US':
-            return USModality(self.dataset).blackout_by_manufacturer()
+def blackout(dataset):
+    """
+    # TODO: check if Modality filter can be removed!
+    Different modalities need different processes.
+    SOPClassUID is more exact.
+    """
+    if dataset.Modality == 'US' and dataset.SOPClassUID == '1.2.840.10008.5.1.4.1.1.3.1':
+        return USModality(dataset)
 
-        if self.dataset.Modality == 'MR':
-            return MRModality(self.dataset).blackout_by_manufacturer()
+    if dataset.Modality == 'MR' and dataset.SOPClassUID == '1.2.840.10008.5.1.4.1.1.4':
+        return MRModality(dataset)
 
-        if self.dataset.Modality == 'CT':
-            return CTModality(self.dataset).blackout_by_manufacturer()
+    if dataset.Modality == 'CT' and dataset.SOPClassUID == '1.2.840.10008.5.1.4.1.1.2':
+        return CTModality(dataset)
 
-        if self.dataset.Modality == 'CR':
-            return CRModality(self.dataset).blackout_by_manufacturer()
+    # TODO: include other modalities or rather SOPClassUIDs!
+    if dataset.Modality == 'CR':
+        return CRModality(dataset)
+

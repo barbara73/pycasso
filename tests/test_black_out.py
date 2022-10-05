@@ -11,19 +11,15 @@ def test_blacken_pixels_returns_same_ds(transfer_syntax_ds):
     assert blacken_pixels(transfer_syntax_ds) == transfer_syntax_ds
 
 
-@pytest.mark.skip('TODO: check output')
-def test_blacken_pixels_returns_changed_photometric_interpretation(transfer_syntax_ds):
-    """Data set changed, when manufacturer is Agfa."""
-    transfer_syntax_ds.Modality = 'US'
-    transfer_syntax_ds.ManufacturerModelName = 'PHILIPS'
-    transfer_syntax_ds.ImageType = 'DERIVED\PRIMARY\OTHER\VPCT\clablabla'
-    transfer_syntax_ds.PhotometricInterpretation = 'YBR_FULL_422'
-    assert blacken_pixels(transfer_syntax_ds).PhotometricInterpretation == 'RGB'
+def test_blacken_pixels_returns_changed_photometric_interpretation(us_dataset):
+    """Data set changed, when manufacturer is PHILIPS and modality is US."""
+    ds = blacken_pixels(us_dataset)
+    assert ds.PhotometricInterpretation == 'YBR_FULL'
 
 
-def test_return_unchanged_ds_if_attribute_is_missing(agfa_dataset):
+def test_return_unchanged_ds_if_attribute_is_missing(another_dataset):
     """Return unchanged data set if an attribute (dicom tag) is missing."""
-    black_ds = blacken_pixels(agfa_dataset)
+    black_ds = blacken_pixels(another_dataset)
     assert black_ds.PhotometricInterpretation == 'RGB'
 
 

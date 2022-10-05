@@ -8,16 +8,18 @@ They will be deleted (set to None).
 """
 from pydicom import Dataset
 
-from .blackout_factory import BlackOutFactory
+from .blackout_factory import blackout
 
 
 def blacken_pixels(dataset: Dataset) -> Dataset:
     """
     Blacken pixel based on manufacturer, modality and image size.
+
+    You can filter out all the secondary image types already in this step.
     """
     try:
         if 'PRIMARY' in (x for x in dataset.ImageType):
-            BlackOutFactory(dataset).blackout()
+            return blackout(dataset).blackout_by_manufacturer()
 
         return dataset
 
@@ -27,7 +29,7 @@ def blacken_pixels(dataset: Dataset) -> Dataset:
 
 def delete_dicom(dataset: Dataset) -> bool:
     """
-    Return None if the dicom can be deleted.
+    True if the dicom can be deleted.
     """
     try:
         if 'PRIMARY' not in (x for x in dataset.ImageType) \
