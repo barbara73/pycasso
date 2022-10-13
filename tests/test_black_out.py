@@ -1,8 +1,6 @@
 """
 Test black out
 """
-import pytest
-
 from src.pycassodicom.black_out import delete_dicom, blacken_pixels
 
 
@@ -17,24 +15,23 @@ def test_blacken_pixels_returns_changed_photometric_interpretation(us_dataset):
     assert ds.PhotometricInterpretation == 'YBR_FULL'
 
 
-def test_return_unchanged_ds_if_attribute_is_missing(another_dataset):
+def test_return_unchanged_ds_if_attribute_is_missing(ge_dataset):
     """Return unchanged data set if an attribute (dicom tag) is missing."""
-    black_ds = blacken_pixels(another_dataset)
+    black_ds = blacken_pixels(ge_dataset)
     assert black_ds.PhotometricInterpretation == 'RGB'
 
 
-def test_delete_dicom_returns_true(a_dataset):
-    """Return None if data set has specific image type, size and modality."""
-    assert delete_dicom(a_dataset) is True
-
-
-def test_delete_dicom_returns_true_when_nb_frames_is_none(a_dataset):
+def test_delete_dicom_returns_true_when_nb_frames_is_none(us_dataset):
     """If one condition is different, then image will not be deleted."""
-    a_dataset.NumberOfFrames = None
-    assert delete_dicom(a_dataset) is True
+    us_dataset.NumberOfFrames = None
+    assert delete_dicom(us_dataset) is True
 
 
-def test_delete_dicom_returns_false(a_dataset):
-    """Return None if data set has specific image type, size and modality."""
-    a_dataset.ImageType = 'DERIVED\PRIMARY\OTHER\VPCT\clablabla'
-    assert delete_dicom(a_dataset) is False
+def test_delete_dicom_returns_false(us_dataset):
+    """Return false, if you want to keep image that is correct (PRIMARY)."""
+    assert delete_dicom(us_dataset) is False
+
+
+def test_delete_dicom_returns_true(ct_dataset):
+    """Return true to delete image that contains SECONDARY."""
+    assert delete_dicom(ct_dataset) is True

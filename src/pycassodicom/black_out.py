@@ -19,7 +19,7 @@ def blacken_pixels(dataset: Dataset) -> Dataset:
     """
     try:
         if 'PRIMARY' in (x for x in dataset.ImageType):
-            return blackout(dataset).blackout_by_manufacturer()
+            return blackout(dataset)
 
         return dataset
 
@@ -39,9 +39,9 @@ def delete_dicom(dataset: Dataset) -> bool:
         if dataset.Modality == 'US' and dataset.NumberOfFrames is None:
             return True
 
-        # if ds.ManufacturerModelName == 'TUS-AI900' \
-        #         and 'CARDIOLOGY' not in ds.ImageType:
-        #     return True
+        if 'SECONDARY' in (x for x in dataset.ImageType) \
+                or dataset.SOPClassUID == '1.2.840.10008.5.1.4.1.1.7':
+            return True
 
         return False
 
