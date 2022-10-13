@@ -55,9 +55,9 @@ class YBRFull422(PhotometricInterpretation):
     def make_black(self, pixels):
         img = self.get_image()
         try:
-            img[:, 0:round(img.shape[1] * 0.1), :, :] = 0
+            img[:, 0:pixels-1, :, :] = 0
         except IndexError:
-            img[0:round(img.shape[0] * 0.1), :] = 0
+            img[0:pixels-1, :] = 0
 
         return self.write_dataset(img)
 
@@ -86,10 +86,13 @@ class Philips:
         """Different process for different photometric interpretation and image size."""
 
         if self.dataset.PhotometricInterpretation == 'MONOCHROME2':
-            return update_ds(MonoChrome2(self.dataset).make_black(pixels=0))
+            return update_ds(MonoChrome2(self.dataset).make_black(pixels=75))
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
-            return update_ds(YBRFull422(self.dataset).make_black(pixels=0))
+            return update_ds(YBRFull422(self.dataset).make_black(pixels=60))
+
+        if self.dataset.PhotometricInterpretation == 'RGB':
+            return update_ds(RGB(self.dataset).make_black(pixels=75))
 
 
 @dataclass
@@ -112,11 +115,7 @@ class GeneralElectrics:
     def process_image(self):
         """Different process for different photometric interpretation and image size."""
         if self.dataset.PhotometricInterpretation == 'RGB':
-            return update_ds(YBRFull422(self.dataset).make_black(pixels=0))
-            # try:
-            #     img[:, 0:round(img.shape[1] * 0.072), :, :] = 0
-            # except IndexError:
-            #     img[0:round(img.shape[0] * 0.072), :, :] = 0
+            return update_ds(YBRFull422(self.dataset).make_black(pixels=50))
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             return update_ds(YBRFull422(self.dataset).make_black(pixels=50))
