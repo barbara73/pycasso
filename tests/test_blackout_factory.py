@@ -1,6 +1,7 @@
 import pytest
 
-from src.pycassodicom.blackout_factory import MonoChrome2, PhotometricInterpretation, blackout, USModality
+from src.pycassodicom.blackout_factory import MonoChrome2, PhotometricInterpretation
+from src.pycassodicom.blackout_factory import blackout, USModality
 
 
 def test_can_get_image(us_dataset):

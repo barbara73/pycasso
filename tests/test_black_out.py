@@ -12,7 +12,7 @@ def test_blacken_pixels_returns_same_ds(transfer_syntax_ds):
 def test_blacken_pixels_returns_changed_photometric_interpretation(us_dataset):
     """Data set changed, when manufacturer is PHILIPS and modality is US."""
     ds = blacken_pixels(us_dataset)
-    assert ds.PhotometricInterpretation == 'YBR_FULL'
+    assert ds.PhotometricInterpretation == 'MONOCHROME2'
 
 
 def test_return_unchanged_ds_if_attribute_is_missing(ge_dataset):

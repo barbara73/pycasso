@@ -82,6 +82,7 @@ def ge_dataset() -> Dataset:
     block = dataset.private_block(0x00B1, 'TestCreator', create=True)
     block.add_new(0x01, 'SH', 'my testvalue')
 
+    dataset.DeidentificationMethodCodeSequence = []
     dataset.Manufacturer = 'GE blabla'
     dataset.file_meta = Dataset()
     img = np.ones(shape=(dataset.Rows, dataset.Columns, 3), dtype=np.uint16) * 255

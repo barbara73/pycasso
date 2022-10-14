@@ -27,7 +27,7 @@ class PhotometricInterpretation:
     def make_black(self, pixels):
         img = self.get_image()
         try:
-            img[:, 0:pixels-1, :, :] = 0
+            img[0:pixels-1, :, :] = 0
         except IndexError:
             img[0:pixels-1, :] = 0
 
@@ -57,7 +57,7 @@ class YBRFull422(PhotometricInterpretation):
         try:
             img[:, 0:pixels-1, :, :] = 0
         except IndexError:
-            img[0:pixels-1, :] = 0
+            img[0:pixels-1, :, :] = 0
 
         return self.write_dataset(img)
 
@@ -66,6 +66,36 @@ class RGB(PhotometricInterpretation):
     def __int__(self, dataset):
         super().__init__(dataset)
 
+    def make_black(self, pixels):
+        img = self.get_image()
+        try:
+            img[:, 0:pixels-1, :, :] = 0
+        except IndexError:
+            try:
+                img[0:pixels-1, :, :] = 0
+            except IndexError:
+                img[0:pixels-1, :] = 0
+
+        return self.write_dataset(img)
+
+
+class PaletteColor(PhotometricInterpretation):
+    def __int__(self, dataset):
+        super().__init__(dataset)
+
+    def write_dataset(self, img):
+        self.dataset.PixelData = img
+        return self.dataset
+
+    def make_black(self, pixels):
+        img = self.get_image()
+        try:
+            img[:, 0:pixels-1, :] = 0
+        except IndexError:
+            img[0:pixels-1, :] = 0
+
+        return self.write_dataset(img)
+
 
 class MonoChrome2(PhotometricInterpretation):
     def __int__(self, dataset):
@@ -73,8 +103,16 @@ class MonoChrome2(PhotometricInterpretation):
 
     def write_dataset(self, img):
         self.dataset.PixelData = img
-        self.dataset.PhotometricInterpretation = 'YBR_FULL'
         return self.dataset
+
+    def make_black(self, pixels):
+        img = self.get_image()
+        try:
+            img[:, 0:pixels-1, :] = 0
+        except IndexError:
+            img[0:pixels-1, :] = 0
+
+        return self.write_dataset(img)
 
 
 @dataclass
@@ -86,13 +124,16 @@ class Philips:
         """Different process for different photometric interpretation and image size."""
 
         if self.dataset.PhotometricInterpretation == 'MONOCHROME2':
-            return update_ds(MonoChrome2(self.dataset).make_black(pixels=75))
+            return update_ds(MonoChrome2(self.dataset).make_black(pixels=60))
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             return update_ds(YBRFull422(self.dataset).make_black(pixels=60))
 
         if self.dataset.PhotometricInterpretation == 'RGB':
-            return update_ds(RGB(self.dataset).make_black(pixels=75))
+            return update_ds(RGB(self.dataset).make_black(pixels=60))
+
+        if self.dataset.PhotometricInterpretation == 'PALETTE COLOR':
+            return update_ds(PaletteColor(self.dataset).make_black(pixels=60))
 
 
 @dataclass
@@ -102,9 +143,11 @@ class Toshiba:
 
     def process_image(self):
         """Different process for different photometric interpretation and image size."""
+        if self.dataset.PhotometricInterpretation == 'RGB':
+            return update_ds(RGB(self.dataset).make_black(pixels=50))
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
-            return update_ds(YBRFull422(self.dataset).make_black(pixels=70))
+            return update_ds(YBRFull422(self.dataset).make_black(pixels=60))
 
 
 @dataclass
@@ -115,7 +158,7 @@ class GeneralElectrics:
     def process_image(self):
         """Different process for different photometric interpretation and image size."""
         if self.dataset.PhotometricInterpretation == 'RGB':
-            return update_ds(YBRFull422(self.dataset).make_black(pixels=50))
+            return update_ds(RGB(self.dataset).make_black(pixels=50))
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             return update_ds(YBRFull422(self.dataset).make_black(pixels=50))
@@ -136,10 +179,10 @@ class USModality(Modality):
 
     def process_by_manufacturer(self):
         """Different manufacturers need different process."""
-        if str(self.dataset.Manufacturer).find('philips') > -1:
+        if str(self.dataset.Manufacturer).lower().find('philips') > -1:
             return Philips(self.dataset).process_image()
 
-        if str(self.dataset.Manufacturer).find('toshiba') > -1:
+        if str(self.dataset.Manufacturer).lower().find('toshiba') > -1:
             return Toshiba(self.dataset).process_image()
 
         if str(self.dataset.Manufacturer).find('GE') > -1:
