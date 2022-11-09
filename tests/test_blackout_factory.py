@@ -51,8 +51,8 @@ def test_blackout_modality_us(us_dataset):
 
 
 def test_blackout_modality_ct(ct_dataset):
-    """Test that CT - not yet implemented or no blackout keeps the correct tags."""
+    """Test blackout with CT works."""
+    assert ct_dataset.SOPClassUID == '1.2.840.10008.5.1.4.1.1.224'
+    assert ct_dataset.BurnedInAnnotation == 'YES'
     changed_ds = blackout(ct_dataset)
-    assert changed_ds.SOPClassUID == '1.2.840.10008.5.1.4.1.1.224'
-    assert changed_ds.BurnedInAnnotation == 'YES'
-    assert changed_ds.PatientIdentityRemoved == 'NO'
+    assert changed_ds.PatientIdentityRemoved == 'YES'

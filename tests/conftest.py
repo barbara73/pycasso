@@ -28,7 +28,7 @@ def ct_dataset() -> Dataset:
     img = np.ones(shape=(dataset.Rows, dataset.Columns, 3), dtype=np.uint16) * 255
     dataset.PixelData = img.tobytes()
     dataset.SOPClassUID = '1.2.840.10008.5.1.4.1.1.224'
-    dataset.Manufacturer = 'PHILIPS'
+    dataset.Manufacturer = 'Agfa'
 
     dataset.BurnedInAnnotation = 'YES'
     dataset.PatientIdentityRemoved = 'NO'

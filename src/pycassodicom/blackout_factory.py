@@ -200,9 +200,6 @@ class USModality(Modality):
         if str(self.dataset.Manufacturer).find('GE') > -1:
             return GeneralElectrics(self.dataset).process_image()
 
-        if str(self.dataset.Manufacturer).lower().find('agfa') > -1:
-            return Agfa(self.dataset).process_image()
-
         return self.dataset
 
 
@@ -216,6 +213,11 @@ class CTModality(Modality):
     """CT (computed tomography) modality"""
     def __int__(self, dataset):
         super().__init__(dataset)
+
+    def process_by_manufacturer(self):
+        """Different manufacturers need different process."""
+        if str(self.dataset.Manufacturer).lower().find('agfa') > -1:
+            return Agfa(self.dataset).process_image()
 
 
 class CRModality(Modality):
