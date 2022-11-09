@@ -116,6 +116,18 @@ class MonoChrome2(PhotometricInterpretation):
 
 
 @dataclass
+class Agfa:
+    """Philips manufacturer"""
+    dataset: Dataset
+
+    def process_image(self):
+        """Different process for different photometric interpretation and image size."""
+
+        if self.dataset.PhotometricInterpretation == 'RGB':
+            return update_ds(RGB(self.dataset).make_black(pixels=50))
+
+
+@dataclass
 class Philips:
     """Philips manufacturer"""
     dataset: Dataset
@@ -187,6 +199,9 @@ class USModality(Modality):
 
         if str(self.dataset.Manufacturer).find('GE') > -1:
             return GeneralElectrics(self.dataset).process_image()
+
+        if str(self.dataset.Manufacturer).lower().find('agfa') > -1:
+            return Agfa(self.dataset).process_image()
 
         return self.dataset
 

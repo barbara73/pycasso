@@ -33,5 +33,5 @@ def test_delete_dicom_returns_false(us_dataset):
 
 
 def test_delete_dicom_returns_true(ct_dataset):
-    """Return true to delete image that contains SECONDARY."""
+    """Return true to delete image that contains INVALID."""
     assert delete_dicom(ct_dataset) is True

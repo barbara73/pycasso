@@ -15,7 +15,7 @@ def ct_dataset() -> Dataset:
     dataset = Dataset()
     dataset.add(DataElementFactory(tag='PatientID', value='12345'))
     dataset.add(DataElementFactory(tag='Modality', value='CT'))
-    dataset.add(DataElementFactory(tag='ImageType', value='DERIVED\SECONDARY\OTHER\VPCT\clablabla'))
+    dataset.add(DataElementFactory(tag='ImageType', value='DERIVED\INVALID\OTHER\VPCT\clablabla'))
     dataset.add(DataElementFactory(tag='Rows', value=968))
     dataset.add(DataElementFactory(tag='Columns', value=968))
     dataset.add(DataElementFactory(tag='PatientName', value='Martha'))
