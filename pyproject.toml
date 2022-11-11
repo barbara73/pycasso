@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pycassodicom"
-version = "0.4.1"
+version = "0.4.2"
 description = "De-identify dicom images by blackening pixels"
 authors = ["barbara73 <barbara.jesacher@gmail.com>"]
 license = "MIT"

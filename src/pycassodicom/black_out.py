@@ -31,14 +31,23 @@ def delete_dicom(dataset: Dataset) -> bool:
     """
     True if the dicom can be deleted.
     """
+    sop_class = dataset.SOPClassUID
+    modality = dataset.Modality
     try:
         if 'INVALID' in (x for x in dataset.ImageType):
             return True
 
-        if dataset.Modality == 'US' and dataset.NumberOfFrames is None:
+        if modality == 'US' and \
+                (dataset.NumberOfFrames is None or sop_class.find('1.2.840.10008.5.1.4.1.1.3.1') < -1):
             return True
 
-        if dataset.SOPClassUID == '1.2.840.10008.5.1.4.1.1.7':
+        if sop_class == '1.2.840.10008.5.1.4.1.1.7':
+            return True
+
+        if dataset.Modality == 'MR' and sop_class.find('1.2.840.10008.5.1.4.1.1.4') < -1:
+            return True
+
+        if dataset.Modality == 'CT' and sop_class.find('1.2.840.10008.5.1.4.1.1.2') < -1:
             return True
 
         return False
