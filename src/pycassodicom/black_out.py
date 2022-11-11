@@ -38,16 +38,16 @@ def delete_dicom(dataset: Dataset) -> bool:
             return True
 
         if modality == 'US' and \
-                (dataset.NumberOfFrames is None or sop_class.find('1.2.840.10008.5.1.4.1.1.3.1') < -1):
+                (dataset.NumberOfFrames is None or sop_class.find('1.2.840.10008.5.1.4.1.1.3.1') == -1):
             return True
 
         if sop_class == '1.2.840.10008.5.1.4.1.1.7':
             return True
 
-        if dataset.Modality == 'MR' and sop_class.find('1.2.840.10008.5.1.4.1.1.4') < -1:
+        if dataset.Modality == 'MR' and sop_class.find('1.2.840.10008.5.1.4.1.1.4') == -1:
             return True
 
-        if dataset.Modality == 'CT' and sop_class.find('1.2.840.10008.5.1.4.1.1.2') < -1:
+        if dataset.Modality == 'CT' and sop_class.find('1.2.840.10008.5.1.4.1.1.2') == -1:
             return True
 
         return False
