@@ -234,7 +234,7 @@ def blackout(dataset):
     """
     sop_class = str(dataset.SOPClassUID)
 
-    if sop_class.find('1.2.840.10008.5.1.4.1.1.3.1') == 0:
+    if sop_class.find('1.2.840.10008.5.1.4.1.1.6.1') == 0:
         return USModality(dataset).process_by_manufacturer()
 
     if sop_class.find('1.2.840.10008.5.1.4.1.1.4') == 0:

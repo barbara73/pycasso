@@ -1,6 +1,4 @@
-pydicom~=2.3.0
-dicomgenerator~=0.4.0
-numpy~=1.23.1
-pytest~=7.1.2
-GDCM
-pylibjpeg
+pydicom
+dicomgenerator
+numpy
+pytest
