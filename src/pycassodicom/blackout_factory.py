@@ -136,10 +136,10 @@ class Philips:
         """Different process for different photometric interpretation and image size."""
 
         if self.dataset.PhotometricInterpretation == 'MONOCHROME2':
-            return update_ds(MonoChrome2(self.dataset).make_black(pixels=60))
+            return update_ds(MonoChrome2(self.dataset).make_black(pixels=70))
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
-            return update_ds(YBRFull422(self.dataset).make_black(pixels=60))
+            return update_ds(YBRFull422(self.dataset).make_black(pixels=70))
 
         if self.dataset.PhotometricInterpretation == 'RGB':
             return update_ds(RGB(self.dataset).make_black(pixels=60))
@@ -234,7 +234,7 @@ def blackout(dataset):
     """
     sop_class = str(dataset.SOPClassUID)
 
-    if sop_class.find('1.2.840.10008.5.1.4.1.1.6.1') == 0:
+    if sop_class.find('1.2.840.10008.5.1.4.1.1.3.1') == 0:
         return USModality(dataset).process_by_manufacturer()
 
     if sop_class.find('1.2.840.10008.5.1.4.1.1.4') == 0:

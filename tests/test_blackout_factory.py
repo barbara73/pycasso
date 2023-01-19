@@ -45,7 +45,7 @@ def test_process_by_philips(us_dataset):
 def test_blackout_modality_us(us_dataset):
     """Test that whole process works."""
     changed_ds = blackout(us_dataset)
-    assert changed_ds.SOPClassUID == '1.2.840.10008.5.1.4.1.1.6.124'
+    assert changed_ds.SOPClassUID == '1.2.840.10008.5.1.4.1.1.3.124'
     assert changed_ds.BurnedInAnnotation == 'NO'
     assert changed_ds.PatientIdentityRemoved == 'YES'
 

@@ -27,11 +27,11 @@ def test_delete_dicom_returns_true_when_nb_frames_is_none(us_dataset):
     assert delete_dicom(us_dataset) is True
 
 
-def test_delete_dicom_returns_false(us_dataset):
+def test_delete_dicom_returns_false(ct_dataset):
     """Return false, if you want to keep image that is correct (PRIMARY)."""
-    assert delete_dicom(us_dataset) is False
+    assert delete_dicom(ct_dataset) is False
 
 
-def test_delete_dicom_returns_true(ct_dataset):
-    """Return true to delete image that contains INVALID."""
-    assert delete_dicom(ct_dataset) is True
+def test_delete_dicom_returns_true(us_dataset):
+    """Return true to delete image that has Number of Frames Null."""
+    assert delete_dicom(us_dataset) is True

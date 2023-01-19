@@ -55,7 +55,7 @@ def us_dataset() -> Dataset:
     dataset.file_meta = Dataset()
     img = np.ones(shape=(dataset.Rows, dataset.Columns, 3), dtype=np.uint16) * 255
     dataset.PixelData = img.tobytes()
-    dataset.SOPClassUID = '1.2.840.10008.5.1.4.1.1.6.124'
+    dataset.SOPClassUID = '1.2.840.10008.5.1.4.1.1.3.124'
     dataset.Manufacturer = 'PHILIPS'
     dataset.ImageType = 'DERIVED\PRIMARY\OTHER\VPCT\clablabla'
     dataset.BurnedInAnnotation = 'YES'
