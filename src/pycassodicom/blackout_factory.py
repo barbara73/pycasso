@@ -126,6 +126,7 @@ class Agfa:
         if self.dataset.PhotometricInterpretation == 'RGB':
             return update_ds(RGB(self.dataset).make_black(pixels=50))
 
+        return self.dataset
 
 @dataclass
 class Philips:
@@ -147,6 +148,8 @@ class Philips:
         if self.dataset.PhotometricInterpretation == 'PALETTE COLOR':
             return update_ds(PaletteColor(self.dataset).make_black(pixels=60))
 
+        return self.dataset
+
 
 @dataclass
 class Toshiba:
@@ -160,6 +163,8 @@ class Toshiba:
 
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             return update_ds(YBRFull422(self.dataset).make_black(pixels=60))
+
+        return self.dataset
 
 
 @dataclass
@@ -175,6 +180,7 @@ class GeneralElectrics:
         if self.dataset.PhotometricInterpretation == 'YBR_FULL_422':
             return update_ds(YBRFull422(self.dataset).make_black(pixels=50))
 
+        return self.dataset
 
 @dataclass
 class Modality(ABC):
@@ -219,6 +225,8 @@ class CTModality(Modality):
         if str(self.dataset.Manufacturer).lower().find('agfa') > -1:
             return Agfa(self.dataset).process_image()
 
+        return self.dataset
+
 
 class CRModality(Modality):
     """CR (computed radiology) modality"""
@@ -232,19 +240,22 @@ def blackout(dataset):
     Different modalities need different processes.
     SOPClassUID is more exact.
     """
-    sop_class = str(dataset.SOPClassUID)
+    try:
+        sop_class = dataset.SOPClassUID
 
-    if sop_class.find('1.2.840.10008.5.1.4.1.1.3.1') == 0:
-        return USModality(dataset).process_by_manufacturer()
+        if '1.2.840.10008.5.1.4.1.1.3.1' in sop_class:
+            return USModality(dataset).process_by_manufacturer()
 
-    if sop_class.find('1.2.840.10008.5.1.4.1.1.4') == 0:
-        return MRModality(dataset).process_by_manufacturer()
+        if '1.2.840.10008.5.1.4.1.1.4' in sop_class:
+            return MRModality(dataset).process_by_manufacturer()
 
-    if sop_class.find('1.2.840.10008.5.1.4.1.1.2') == 0:
-        return CTModality(dataset).process_by_manufacturer()
+        if '1.2.840.10008.5.1.4.1.1.2' in sop_class:
+            return CTModality(dataset).process_by_manufacturer()
 
-    # TODO: include other modalities or rather SOPClassUIDs!
-    if dataset.Modality == 'CR':
-        return CRModality(dataset).process_by_manufacturer()
+        # TODO: include other modalities or rather SOPClassUIDs!
+        if dataset.Modality == 'CR':
+            return CRModality(dataset).process_by_manufacturer()
 
-    return dataset
+        return dataset
+    except AttributeError:
+        return dataset
